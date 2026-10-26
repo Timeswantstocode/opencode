@@ -25,6 +25,23 @@ describe("Provider", () => {
     }
   })
 
+  test("keeps loading the hyphenated provider paths existing configs reference", async () => {
+    for (const name of [
+      "amazon-bedrock-mantle",
+      "google-vertex-chat",
+      "google-vertex-interactions",
+      "google-vertex-messages",
+      "google-vertex-mistral",
+      "google-vertex-responses",
+      "openai-compatible-responses",
+    ]) {
+      const specifier = `@opencode/ai/providers/${name}`
+      expect(Provider.builtinPackages.has(specifier)).toBe(true)
+      const loaded = await Effect.runPromise(Provider.loadPackage(specifier))
+      expect(loaded.model).toBeFunction()
+    }
+  })
+
   test("passes flat settings to native packages without Core settings", () => {
     expect(
       Provider.nativeSettings({
