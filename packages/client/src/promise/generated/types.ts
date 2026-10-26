@@ -5841,6 +5841,84 @@ export type ExperimentalMediaGetInput = { readonly hash: { readonly hash: string
 
 export type ExperimentalMediaGetOutput = globalThis.Uint8Array
 
+export type ExperimentalSessionTimelineInput = {
+  readonly sessionID: { readonly sessionID: string }["sessionID"]
+  readonly limit?: {
+    readonly limit?: number | undefined
+    readonly order?: "asc" | "desc" | undefined
+    readonly cursor?: string | undefined
+    readonly type?:
+      | "agent-switched"
+      | "model-switched"
+      | "location-switched"
+      | "user"
+      | "synthetic"
+      | "system"
+      | "skill"
+      | "shell"
+      | "assistant"
+      | "compaction"
+      | "idle"
+      | undefined
+  }["limit"]
+  readonly order?: {
+    readonly limit?: number | undefined
+    readonly order?: "asc" | "desc" | undefined
+    readonly cursor?: string | undefined
+    readonly type?:
+      | "agent-switched"
+      | "model-switched"
+      | "location-switched"
+      | "user"
+      | "synthetic"
+      | "system"
+      | "skill"
+      | "shell"
+      | "assistant"
+      | "compaction"
+      | "idle"
+      | undefined
+  }["order"]
+  readonly cursor?: {
+    readonly limit?: number | undefined
+    readonly order?: "asc" | "desc" | undefined
+    readonly cursor?: string | undefined
+    readonly type?:
+      | "agent-switched"
+      | "model-switched"
+      | "location-switched"
+      | "user"
+      | "synthetic"
+      | "system"
+      | "skill"
+      | "shell"
+      | "assistant"
+      | "compaction"
+      | "idle"
+      | undefined
+  }["cursor"]
+  readonly type?: {
+    readonly limit?: number | undefined
+    readonly order?: "asc" | "desc" | undefined
+    readonly cursor?: string | undefined
+    readonly type?:
+      | "agent-switched"
+      | "model-switched"
+      | "location-switched"
+      | "user"
+      | "synthetic"
+      | "system"
+      | "skill"
+      | "shell"
+      | "assistant"
+      | "compaction"
+      | "idle"
+      | undefined
+  }["type"]
+}
+
+export type ExperimentalSessionTimelineOutput = SessionMessagesResponse
+
 export type ShellListInput = {
   readonly location?: { readonly location?: { readonly directory?: string | undefined } | undefined }["location"]
 }

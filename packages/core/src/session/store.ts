@@ -45,10 +45,44 @@ export type MessagesInput = {
   limit?: number
   order?: "asc" | "desc"
   type?: SessionMessage.Type
+  /** Timeline projection: drop inline and `media:` read-tool files, which the client opens by path. */
+  omitReadMedia?: boolean
   cursor?: {
     id: SessionMessage.ID
     direction: "previous" | "next"
   }
+}
+
+type MessageRow = typeof SessionMessageTable.$inferSelect
+
+/**
+ * Read images can be opened by path; execute images must stay inline. Runs on stored rows, before blobs are
+ * hydrated, so dropped `media:` refs never cost a blob read and both read paths share one projection.
+ */
+function omitReadMedia(row: MessageRow): MessageRow {
+  const data = row.data
+  if (!("content" in data)) return row
+  let changed = false
+  const content = data.content.map((part) => {
+    if (part.type !== "tool" || part.name !== "read") return part
+    if (part.state.status !== "completed" && part.state.status !== "error") return part
+    const items = part.state.content
+    if (!items) return part
+    const kept = items.filter(
+      (item) => !(item.type === "file" && (item.uri.startsWith("data:") || item.uri.startsWith("media:"))),
+    )
+    if (kept.length === items.length) return part
+    changed = true
+    return {
+      ...part,
+      state: {
+        ...part.state,
+        // Tool content is nonempty. Preserve the read tool's existing image-only success text.
+        content: [kept[0] ?? { type: "text" as const, text: "Image read successfully" }, ...kept.slice(1)],
+      },
+    }
+  })
+  return changed ? ({ ...row, data: { ...data, content } } as MessageRow) : row
 }
 
 export interface Interface {
@@ -131,7 +165,8 @@ const layer = Layer.effect(
         )
         .orderBy(order === "asc" ? asc(SessionMessageTable.seq) : desc(SessionMessageTable.seq))
       const rows = yield* (input.limit === undefined ? query.all() : query.limit(input.limit).all()).pipe(Effect.orDie)
-      return direction === "previous" ? rows.toReversed() : rows
+      const ordered = direction === "previous" ? rows.toReversed() : rows
+      return input.omitReadMedia ? ordered.map(omitReadMedia) : ordered
     })
 
     const messageRow = (messageID: SessionMessage.ID) =>
